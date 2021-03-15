@@ -8,15 +8,48 @@ public class CardHandler : MonoBehaviour
     public Text text;
     public Button button;
     public int number;
-    public Image image;
+    public Image buttonImage, image;
 
-    public int x, y;
+    public Vector2Int arrayPos;
 
-    public void Start()
+    public bool active;
+
+    public bool isAnimating;
+    public float targetScale, currentScale;
+    private RectTransform buttonRectTransform;
+
+    public void Awake()
     {
-        ToggleHighlight(false);
+        buttonRectTransform = button.GetComponent<RectTransform>();
+        currentScale = buttonRectTransform.localScale.magnitude;
 
         button.onClick.AddListener(ButtonPressed);
+    }
+
+    public void Update()
+    {
+        if (isAnimating) 
+        {
+            if (currentScale < targetScale)
+            {
+                currentScale += 0.1f;
+
+                currentScale = Mathf.Clamp(currentScale, 0, targetScale);
+            }
+            else if(currentScale > targetScale) 
+            {
+                currentScale = Mathf.Clamp(currentScale, targetScale, 1.5f);
+                currentScale -= 0.1f;
+            }
+            else
+            {
+                isAnimating = false;
+            }
+
+            
+
+            buttonRectTransform.localScale = new Vector3(currentScale, currentScale, currentScale);
+        }
     }
 
     private void ButtonPressed()
@@ -25,17 +58,45 @@ public class CardHandler : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    public void Configure(int number, int x, int y)
+    public void Configure(int number, Sprite sprite, int x, int y)
     {
-        text.text = number.ToString();
+        image.sprite = sprite;
         this.number = number;
-        this.x = x;
-        this.y = y;
+        arrayPos.x = x;
+        arrayPos.y = y;
+
+        active = true;
+
+        PlayInitialAnimation();
+    }
+
+    public void PlayInitialAnimation()
+    {
+        buttonRectTransform.localScale = Vector3.zero;
+        currentScale = 0;
+        targetScale = 1;
+        isAnimating = true;
+    }
+
+    public void ToggleGrowAnimation(bool grow) 
+    {
+        buttonRectTransform.localScale = grow ? Vector3.one : new Vector3(1.5f, 1.5f, 1.5f);
+        currentScale = grow ? 1.0f : 1.5f;
+        targetScale = grow ? 1.5f : 1.0f;
+        isAnimating = true;
     }
 
     // Update is called once per frame
     public void ToggleHighlight(bool on)
     {
-        image.color = on ? Color.green: Color.white;
+        ToggleGrowAnimation(on);
+        buttonImage.color = on ? Color.green: Color.white;
+    }
+
+    public void Dissappear()
+    {
+        targetScale = 0.0f;
+        isAnimating = true;
+        active = false;
     }
 }

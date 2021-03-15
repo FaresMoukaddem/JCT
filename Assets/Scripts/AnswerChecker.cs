@@ -41,154 +41,311 @@ public class AnswerChecker : MonoBehaviour
 
         int turnsTaken = 0;
 
-        if (up != 0)
+        bool foundPath = false;
+
+        Debug.Log(firstCard);
+        Debug.Log(secondCard);
+        
+        if(path.y == secondCard.y) 
         {
-            // Check all right or left paths straight upwards
-
-            bool foundPath = false;
-            // Check all right paths.
-            for (int i = path.x; i < (levelMap.GetLength(0) - 1) - path.x; i++) 
+            if(CheckIfStraightPathToXCard(path, secondCard, path.x < secondCard.x)) 
             {
-                if(CheckIfStraightPathToYPos(new Vector2Int(path.y, i), secondCard.y, up > 0, true)) 
-                {
-                    foundPath = true;
-                    break;
-                }
+                return true;
+            }
+        }
+
+        path = firstCard;
+        if(path.x == secondCard.x) 
+        {
+            if(CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
+            {
+                return true;
+            }
+        }
+
+        // Reset path.
+        path = firstCard;
+
+        // Check all paths from right or left straight upwards
+        Debug.Log("up " + up);
+
+        foundPath = false;
+
+        int stepsMoved = 1;
+
+        Debug.Log("checking right paths");
+        // Check all right paths.
+        for (int i = path.x + 1; i < levelMap.GetLength(1); i++)
+        {
+            // If we have moved, we need to check if its an available path or not.
+            if (i != path.x)
+            {
+                if (levelMap[path.y, i] == true) break;
             }
 
-            // Check left
-            if (foundPath == false) 
+            if(i == secondCard.x) // If we are on the same x pos as our target, check if we can go straight to it on the y axis
             {
-                for (int i = path.x; i >= 0; i--)
+                if(CheckIfStraightPathToYCard(new Vector2Int(i, path.y),secondCard, up > 0)) 
                 {
-                    if (CheckIfStraightPathToYPos(new Vector2Int(path.y, i), secondCard.y, up > 0, true))
-                    {
-                        foundPath = true;
-                        break;
-                    }
+                    Debug.Log("straight from one of the right paths to our target" + " steps: " + stepsMoved);
+                    return true;
                 }
             }
-
-            if (foundPath) 
+            else if (CheckIfStraightPathToYPos(new Vector2Int(i, path.y), secondCard.y, up > 0, true))
             {
-                // If we found a path to it, but not at the same x, we took a turn.
-                if (path.x != firstCard.x) turnsTaken++;
-
-                if (path == secondCard) return true;
-
-                // Now we check if we can go straight to it on the x-axis;
-                if(CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true)) 
+                Debug.Log("we found a path from the right to our desired y pos" + " steps: " + stepsMoved);
+                Debug.Log("current path " + path);
+                if (CheckIfStraightPathToXCard(path, secondCard, i < secondCard.x)) 
                 {
-                    turnsTaken++;
+                    Debug.Log("And were able to go directly to our goal from there!");
+                    return true;
                 }
-
-                if (path == secondCard) return true;
-
-                if(turnsTaken < 2) 
+                else 
                 {
-                    // We can try to go straight up to our target card
-                    if(CheckIfStraightPathToYPos(path, secondCard.y, path.y < secondCard.y, true))
-                    {
-                        return true; // We reached it with less than 2 turns;
-                    }
+                    path.x = i;
+                    path.y = firstCard.y;
                 }
             }
+            stepsMoved++;
+        }
 
-            // We couldnt reach it going right left or up
-            // That means we need to go in the opposite y direction first.
-            // We reset the position first
-            path = firstCard;
+        // Reset path
+        path = firstCard;
 
-            // Go one step in the opposite direction;
+        stepsMoved = 1;
+        Debug.Log("checking left paths");
+        // Check left paths.
+        for (int i = path.x - 1; i >= 0; i--)
+        {
+            if (levelMap[path.y, i] == true) break;
+
+            if (i == secondCard.x) // If we are on the same x pos as our target, check if we can go straight to it on the y axis
+            {
+                if (CheckIfStraightPathToYCard(new Vector2Int(i, path.y), secondCard, up > 0))
+                {
+                    Debug.Log("straight from one of the left paths to our target" + " steps: " + stepsMoved);
+                    return true;
+                }
+            }
+            else if (CheckIfStraightPathToYPos(new Vector2Int(i, path.y), secondCard.y, up > 0, true))
+            {
+                Debug.Log("we found a path from the left to our desired y pos" + " steps: " + stepsMoved);
+                Debug.Log("current path " + path);
+                if (CheckIfStraightPathToXCard(path, secondCard, i < secondCard.x))
+                {
+                    Debug.Log("And were able to go directly to our goal from there!");
+                    return true;
+                }
+                else
+                {
+                    path.x = i;
+                    path.y = firstCard.y;
+                }
+            }
+            stepsMoved++;
+        }
+
+        //===============================================================================================================================
+        //===============================================================================================================================
+
+        Debug.Log("Now we check all possibilites in the proper y direction");
+
+        if (up == 0) up = 1;
+
+        // Now how much up we can go from our initial position
+        while (path.y + up >= 0 && path.y + up < levelMap.GetLength(0) && levelMap[path.y + up, path.x] != true)
+        {
+            path.y += up;
+
+            if (path.y == secondCard.y)
+            {
+                if (CheckIfStraightPathToXCard(path, secondCard, path.x < secondCard.x))
+                {
+                    Debug.Log("YESS NEW FEATURE WORKED!");
+                    return true;
+                }
+            }
+            else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true))
+            {
+                Debug.Log("Yes we went straight up from out initial position, and then went straight to the proper x pos");
+                if (CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
+                {
+                    Debug.Log("And then we went vertically straight to the card!");
+                    return true;
+                }
+            }
+            path.x = firstCard.x;
+        }
+
+        path = firstCard;
+
+        Debug.Log("Now we check all possibilites in the opposite y direction");
+        // Now how much up we can go from our initial position
+        while (path.y - up >= 0 && path.y - up < levelMap.GetLength(0) && levelMap[path.y - up, path.x] != true)
+        {
             path.y -= up;
 
-            // We reuse the foundPath bool.
-            foundPath = false;
-
-            // We keep going down and see if theres a straight path to the x we need to get to.
-            while(path.y - up >= 0 && path.y - up < levelMap.GetLength(0)) 
+            if (path.y == secondCard.y)
             {
-                if(levelMap[path.y, path.x] == false) 
+                if (CheckIfStraightPathToXCard(path, secondCard, path.x < secondCard.x))
                 {
-                    // Check if there is a path to the right.
-                    if (path.x + 1 < levelMap.GetLength(0))
-                    {
-                        if (CheckIfStraightPathToXPos(path, secondCard.x, true, true)) 
-                        {
-                            foundPath = true;
-                            break;
-                        }
-                    }
-
-                    // Check if there is a path to the left.
-                    if (path.x - 1 >= 0)
-                    {
-                        if (CheckIfStraightPathToXPos(path, secondCard.x, false, true))
-                        {
-                            foundPath = true;
-                            break;
-                        }
-                    }
+                    Debug.Log("YESS NEW FEATURE WORKED!");
+                    return true;
                 }
             }
-
-            if (foundPath) 
+            else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true))
             {
-                // We check if we can go straight up to our target card, else we cant get to it.
-
-                if(CheckIfStraightPathToYPos(path, secondCard.y, up > 0, true)) 
+                Debug.Log("Yes we went straight up from out initial position, and then went straight to the proper x pos");
+                if (CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
                 {
-                    if(path == secondCard) 
-                    {
-                        return true;
-                    }
+                    Debug.Log("And then we went vertically straight to the card!");
+                    return true;
                 }
             }
+            path.x = firstCard.x;
         }
 
         return false;
     }
 
-    public bool CheckIfStraightPathToYPos(Vector2Int fromPos, int desiredYPos, bool upWards, bool setPathY) 
+    public bool CheckIfStraightPathToYPos(Vector2Int fromPos, int desiredYPos, bool upWards, bool setPath) 
     {
         int currentY = fromPos.y;
-        while(currentY < levelMap.GetLength(0) && currentY >= 0) 
+
+        int step = upWards ? +1 : -1;
+
+        while (currentY + step < levelMap.GetLength(0) && currentY + step >= 0)
         {
-            if (currentY == desiredYPos) 
+            if (levelMap[currentY + step, fromPos.x] == false)
             {
-                if (setPathY)
-                {
-                    path.y = currentY;
-                }
-                return true;
+                currentY += step;
+            }
+            else
+            {
+                return false;
             }
 
-            if(levelMap[currentY + (upWards ? + 1 : -1), fromPos.x] == false) 
+            if(currentY == desiredYPos)
             {
-                currentY += (upWards ? +1 : -1);
+                if (setPath)
+                    path = new Vector2Int(fromPos.x, currentY);
+
+                return true;
             }
         }
 
         return false;
     }
 
-    public bool CheckIfStraightPathToXPos(Vector2Int fromPos, int desiredXPos, bool right, bool setPathX) 
+    public void UpdateLevelMap(Vector2Int firstCard, Vector2Int secondCard) 
+    {
+        Debug.Log("MAP BEFORE");
+        for(int i = 0; i < levelMap.GetLength(0); i++) 
+        {
+            string s = "";
+            for(int j = 0; j < levelMap.GetLength(1); j++)
+            {
+                s += levelMap[i, j];
+            }
+            Debug.Log(s);
+        }
+
+        levelMap[firstCard.y, firstCard.x] = false;
+        levelMap[secondCard.y, secondCard.x] = false;
+
+        Debug.Log("MAP AFTER");
+        for (int i = 0; i < levelMap.GetLength(0); i++)
+        {
+            string s = "";
+            for (int j = 0; j < levelMap.GetLength(1); j++)
+            {
+                s += levelMap[i, j];
+            }
+            Debug.Log(s);
+        }
+    }
+
+    public bool CheckIfStraightPathToXPos(Vector2Int fromPos, int desiredXPos, bool right, bool setPath) 
     {
         int currentX = fromPos.x;
-        while (currentX < levelMap.GetLength(1) && currentX >= 0)
+
+        Debug.Log("Starting from " + fromPos + " right: " + right);
+
+        int step = right ? +1 : -1;
+
+        while (currentX + step < levelMap.GetLength(1) && currentX + step >= 0)
         {
-            if (currentX == desiredXPos)
+            if (levelMap[fromPos.y, currentX + step] == false)
             {
-                if (setPathX)
-                {
-                    path.y = currentX;
-                }
-                return true;
+                currentX += step;
+            }
+            else 
+            {
+                return false;
             }
 
-            if (levelMap[fromPos.x, currentX + (right ? +1 : -1)] == false)
+            if(currentX == desiredXPos)
             {
-                currentX += (right ? +1 : -1);
+                if (setPath)
+                    path = new Vector2Int(currentX, fromPos.y);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool CheckIfStraightPathToYCard(Vector2Int fromPos, Vector2Int targetCardPos, bool upWards)
+    {
+        int currentY = fromPos.y;
+
+        int step = upWards ? +1 : -1;
+
+        while (currentY + step < levelMap.GetLength(0) && currentY + step >= 0)
+        {
+            if (levelMap[currentY + step, fromPos.x] == false)
+            {
+                currentY += step;
+            }
+            else
+            {
+                currentY += step;
+                if (new Vector2Int(fromPos.x, currentY) == targetCardPos)
+                {
+                    Debug.Log("straight y " + (upWards ? " up" : " down"));
+                    return true;
+                }
+                else
+                    return false;
+            }
+        }
+
+        return false;
+    }
+
+    public bool CheckIfStraightPathToXCard(Vector2Int fromPos, Vector2Int targetCardPos, bool right)
+    {
+        int currentX = fromPos.x;
+
+        int step = right ? +1 : -1;
+
+        while (currentX + step < levelMap.GetLength(1) && currentX + step >= 0)
+        {
+            if (levelMap[fromPos.y, currentX + step] == false)
+            {
+                currentX += step;
+            }
+            else
+            {
+                currentX += step;
+                if (new Vector2Int(currentX, fromPos.y) == targetCardPos)
+                {
+                    Debug.Log("straight x " + (right ? " right" : " left"));
+                    return true;
+                }
+                else
+                    return false;
             }
         }
 

@@ -11,6 +11,8 @@ public class RoundManager : MonoBehaviour
 
     public AnswerChecker answerChecker;
 
+    public int currentLevel, numberOfCards;
+
     private void Awake()
     {
         if (!instance)
@@ -29,6 +31,12 @@ public class RoundManager : MonoBehaviour
         currentlySelectedCard = null;
     }
 
+    public void Configure(int currentLevel, int numberOfCards) 
+    {
+        this.currentLevel = currentLevel;
+        this.numberOfCards = numberOfCards;
+    }
+
     // Update is called once per frame
     public void ButtonPressed(CardHandler selectedCard)
     {
@@ -42,21 +50,34 @@ public class RoundManager : MonoBehaviour
         {
             Debug.Log("Chose same card");
             currentlySelectedCard.ToggleHighlight(false);
+            
+
+            Debug.Log(answerChecker.CheckIfStraightPathToXPos
+                (currentlySelectedCard.arrayPos,
+                5,
+                false, false));
+
             currentlySelectedCard = null;
         }
         else
         {
             currentlySelectedCard.ToggleHighlight(false);
 
-            if(currentlySelectedCard.number == selectedCard.number) 
+            //if (currentlySelectedCard.number == selectedCard.number)
+            // {
+            bool answer = answerChecker.CheckAnswer(currentlySelectedCard.arrayPos, selectedCard.arrayPos);
+
+            Debug.Log(answer);
+            
+            if (answer)
             {
-                Debug.Log("Checking answer");
-               // answerChecker.CheckAnswer(new Vector2Int(currentlySelectedCard.x, currentlySelectedCard.y), new Vector2Int(selectedCard.x, selectedCard.y));
+                answerChecker.UpdateLevelMap(currentlySelectedCard.arrayPos, selectedCard.arrayPos);
+                numberOfCards -= 2;
+                Debug.Log("Cards left: " + numberOfCards);
+                currentlySelectedCard.Dissappear();
+                selectedCard.Dissappear();
             }
-            else
-            {
-                Debug.Log("Cards dont match");
-            }
+            // }
 
             currentlySelectedCard = null;
         }

@@ -9,11 +9,11 @@ public class LevelDrawer : MonoBehaviour
 {
     public TextAsset[] textAssets;
 
-    public Button testObject;
-
     private int levelWidth, levelHeight, buttonsUsed;
 
     public Transform buttonsParent;
+
+    public RectTransform panel;
 
     private int buttonCount;
 
@@ -21,48 +21,95 @@ public class LevelDrawer : MonoBehaviour
 
     public AnswerChecker answerChecker;
 
-    public string[] levels;
+    public Sprite[] images;
+
+    public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            ReadFile(0);
+        }
+    }
+
+    public string[] ReadFile(int index)
+    {
+        string[] lines = textAssets[index].text.Split('\n');
+        
+        for(int i = 0; i < lines.Length; i++)
+        {
+            lines[i] = lines[i].Trim();
+        }
+
+        return lines;
+    }
 
     public void Start()
     {
-        levels = new string[2];
-        levels[0] = "X0000000X00-0X000000X00-00X00000X00-000X0000X00-0000X000X00-00000X00X00-000000X0X00-0000000XXXX-XXXXXXXXXXX-0000000XXXX-0000000XXX0";
-        levels[1] = "00000X00000-0000XXX0000-000XXXXX000-00XXXXXXX00-0XXXXXXXXX0-XXXXXXXXXXX-000XXXXX000-000XXXXX000-000XXXXX000-000XXXXX000-000XXXXX000-000XXXXX000";
-
         DrawLevel(0);
+    }
+
+    public int GetButtonCount(string[] lines) 
+    {
+        int buttonCount = 0;
+
+        foreach(string s in lines) 
+        {
+            buttonCount += s.Count(x => x == 'X');
+        }
+
+        return buttonCount;
+    }
+
+    public int GetNumberOfDifferentCards(int buttonCount) 
+    {
+        for(int i = 10; i > 1; i--) 
+        {
+            if (i < buttonCount && buttonCount % i == 0)
+            {
+                Debug.Log("Number of different cards " + i);
+                return i;
+            }
+        }
+
+        Debug.LogError("FIX LEVEL");
+
+        return 0;
     }
 
     // Start is called before the first frame update
     void DrawLevel(int index)
     {
-        string[] lines = levels[index].Split('-');
+        string[] lines = ReadFile(index);
         levelHeight = lines.Length;
         levelWidth = lines[0].Length;
 
         Debug.Log(levelWidth);
         Debug.Log(levelHeight);
 
-        buttonCount = levels[index].Count(x => x == 'X');
+        buttonCount = GetButtonCount(lines);
         Debug.Log("button count " + buttonCount);
-
-        RectTransform t;
 
         bool[,] levelMap = new bool[levelHeight, levelWidth];
 
         //===============================================================
         numbersList = new List<int>();
-        
-        for(int i = 0; i < buttonCount/2; i++) 
-        {
-            numbersList.Add(i+1);
-        }
 
-        for (int i = buttonCount / 2; i < buttonCount; i++)
+        int numberOfDifferentCards = GetNumberOfDifferentCards(buttonCount);
+
+        for(int i = 0; i < buttonCount/numberOfDifferentCards; i++) 
         {
-            numbersList.Add(numbersList[i-(buttonCount / 2)]);
+            for(int j = 0; j < numberOfDifferentCards; j++) 
+            {
+                numbersList.Add(j);
+                Debug.Log(j);
+            }
         }
         //===============================================================
 
+        int screenH = Screen.height - (Screen.height/4);
+
+        RectTransform t;
+        int number;
         for (int i = 0; i < levelHeight; i++)
         {
             for(int j = 0; j < levelWidth; j++) 
@@ -73,9 +120,10 @@ public class LevelDrawer : MonoBehaviour
                     t = buttonsParent.GetChild(buttonsUsed).GetComponent<RectTransform>();
                     buttonsUsed++;
                     t.gameObject.SetActive(true);
-                    t.GetComponent<CardHandler>().Configure(GetRandomButtonNumber(), j + 1, i + 1);
-                    t.position = new Vector2((Screen.width / 5 + 1) * 1, Screen.height * 0.5f);
-                    t.position = new Vector2((Screen.width / (levelWidth + 1)) * (j+1), ((Screen.height / levelHeight) * (levelHeight - i)) - 100);
+                    number = GetRandomButtonNumber();
+                    t.GetComponent<CardHandler>().Configure(number, images[number] ,j, i);
+                    t.position = new Vector2((Screen.width / 5 + 1) * 1, screenH * 0.5f);
+                    t.position = new Vector2((Screen.width / (levelWidth + 1)) * (j+1), ((screenH / levelHeight) * (levelHeight - i)) );
                 }
                 else
                 {
@@ -84,6 +132,7 @@ public class LevelDrawer : MonoBehaviour
             }
         }
 
+        RoundManager.instance.Configure(index, buttonCount);
         answerChecker.Configure(levelMap);
 
         Debug.Log("buttons used " + buttonsUsed);
