@@ -148,6 +148,9 @@ public class AnswerChecker : MonoBehaviour
         //===============================================================================================================================
         //===============================================================================================================================
 
+        // Reset path
+        path = firstCard;
+
         Debug.Log("Now we check all possibilites in the proper y direction");
 
         if (up == 0) up = 1;
@@ -167,7 +170,7 @@ public class AnswerChecker : MonoBehaviour
             }
             else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true))
             {
-                Debug.Log("Yes we went straight up from out initial position, and then went straight to the proper x pos");
+                Debug.Log("Yes we went straight +up from out initial position, and then went straight to the proper x pos");
                 if (CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
                 {
                     Debug.Log("And then we went vertically straight to the card!");
@@ -177,6 +180,7 @@ public class AnswerChecker : MonoBehaviour
             path.x = firstCard.x;
         }
 
+        // Reset path
         path = firstCard;
 
         Debug.Log("Now we check all possibilites in the opposite y direction");
@@ -195,7 +199,7 @@ public class AnswerChecker : MonoBehaviour
             }
             else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true))
             {
-                Debug.Log("Yes we went straight up from out initial position, and then went straight to the proper x pos");
+                Debug.Log("Yes we went straight -up from out initial position, and then went straight to the proper x pos");
                 if (CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
                 {
                     Debug.Log("And then we went vertically straight to the card!");
@@ -239,6 +243,7 @@ public class AnswerChecker : MonoBehaviour
 
     public void UpdateLevelMap(Vector2Int firstCard, Vector2Int secondCard) 
     {
+        /*
         Debug.Log("MAP BEFORE");
         for(int i = 0; i < levelMap.GetLength(0); i++) 
         {
@@ -249,10 +254,12 @@ public class AnswerChecker : MonoBehaviour
             }
             Debug.Log(s);
         }
+        */
 
         levelMap[firstCard.y, firstCard.x] = false;
         levelMap[secondCard.y, secondCard.x] = false;
 
+        /*
         Debug.Log("MAP AFTER");
         for (int i = 0; i < levelMap.GetLength(0); i++)
         {
@@ -263,6 +270,7 @@ public class AnswerChecker : MonoBehaviour
             }
             Debug.Log(s);
         }
+        */
     }
 
     public bool CheckIfStraightPathToXPos(Vector2Int fromPos, int desiredXPos, bool right, bool setPath) 

@@ -14,7 +14,7 @@ public class CardHandler : MonoBehaviour
 
     public bool active;
 
-    public bool isAnimating;
+    public bool isAnimating, isDisappearing;
     public float targetScale, currentScale;
     private RectTransform buttonRectTransform;
 
@@ -43,6 +43,12 @@ public class CardHandler : MonoBehaviour
             }
             else
             {
+                if (isDisappearing) 
+                {
+                    isDisappearing = false;
+                    Reset();
+                }
+
                 isAnimating = false;
             }
 
@@ -58,7 +64,7 @@ public class CardHandler : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    public void Configure(int number, Sprite sprite, int x, int y)
+    public void Configure(int number, Sprite sprite, int x, int y, float timeToAnimate = 0)
     {
         image.sprite = sprite;
         this.number = number;
@@ -67,15 +73,27 @@ public class CardHandler : MonoBehaviour
 
         active = true;
 
-        PlayInitialAnimation();
+        StartCoroutine(AnimateAfter(timeToAnimate));
     }
 
-    public void PlayInitialAnimation()
+    public void Reset()
+    {
+        buttonRectTransform.localScale = Vector3.zero;
+        gameObject.SetActive(false);
+    }
+
+    public void PlayInitialAnimation(float timeToAnimate = 0)
     {
         buttonRectTransform.localScale = Vector3.zero;
         currentScale = 0;
         targetScale = 1;
         isAnimating = true;
+    }
+
+    public IEnumerator AnimateAfter(float time)
+    {
+        yield return new WaitForSeconds(time);
+        PlayInitialAnimation();
     }
 
     public void ToggleGrowAnimation(bool grow) 
@@ -97,6 +115,7 @@ public class CardHandler : MonoBehaviour
     {
         targetScale = 0.0f;
         isAnimating = true;
+        isDisappearing = true;
         active = false;
     }
 }
