@@ -21,21 +21,31 @@ public class PopupHandler : MonoBehaviour
 
     public void PopupIn(string popupText, string firstButtonText, string secondButtonText, System.Action firstButtonAction, System.Action secondButtonAction) 
     {
+        // Remove all buttons listeners.
         buttonOne.onClick.RemoveAllListeners();
         buttonTwo.onClick.RemoveAllListeners();
 
+        // Set button texts.
         buttonOneText.text = firstButtonText;
         buttonTwoText.text = secondButtonText;
 
+        // Set popup text.
         text.text = popupText;
 
+        // Add button one on click function.
         buttonOne.onClick.AddListener(() =>
         {
+            // Invoke action.
             firstButtonAction();
+
+            // Animate popup out.
             PopupOut();
+
+            // We deactivate the buttons, so they don't get pressed twice.
             ToggleButtonsActive(false);
         });
 
+        // Add button one on click function.
         buttonTwo.onClick.AddListener(() =>
         {
             secondButtonAction();
@@ -43,8 +53,10 @@ public class PopupHandler : MonoBehaviour
             ToggleButtonsActive(false);
         });
 
+        // Set the buttons as active.
         ToggleButtonsActive(true);
 
+        // Animate the popup in.
         anim.SetTrigger("In");
     }
 

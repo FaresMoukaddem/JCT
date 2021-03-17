@@ -12,16 +12,20 @@ public class SoundSettingsHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // We get a reference to the static instance.
+        // Since accessing a local reference is much better then accessing a static one.
+        // (because we will be accessing the sound handler instance a lot in this script)
         soundHandler = SoundHandler.instance;
 
+        // Load the saved values.
         effectsSlider.value = PlayerPrefs.GetFloat("EffectsVolume", 1);
         musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1);
 
+        // Add the listeners.
         effectsSlider.onValueChanged.AddListener(OnEffectsVolumeChanged);
         musicSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
     }
 
-    // Update is called once per frame
     void OnEffectsVolumeChanged(float newValue)
     {
         soundHandler.SetEffectVolume(newValue);

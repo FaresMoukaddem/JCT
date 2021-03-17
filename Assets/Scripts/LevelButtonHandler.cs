@@ -13,6 +13,7 @@ public class LevelButtonHandler : MonoBehaviour
 
     public void Start()
     {
+        // Checks to see if this buttons level is finished, and show its star accordingly.
         star.SetActive(PlayerPrefs.GetInt("FinishedLevel" + levelIndex.ToString(), 0) == 1);
 
         button.onClick.AddListener(OnPressed);
@@ -23,6 +24,7 @@ public class LevelButtonHandler : MonoBehaviour
         button.onClick.RemoveListener(OnPressed);
     }
 
+    // Level button on click event function.
     public void OnPressed()
     {
         GameManager.instance.LoadGameWithLevel(levelIndex);

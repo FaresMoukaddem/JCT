@@ -15,7 +15,10 @@ public class SceneLoader : MonoBehaviour
     // Start is called before the first frame update
     public void LoadScene(string sceneName)
     {
+        // We animate the loader in.
         anim.SetTrigger("In");
+
+        // We wait a bit before actually loading the scene (about the time of the animation).
         StartCoroutine(WaitAndDo(0.5f, () => SceneManager.LoadScene(sceneName)));
     }
 
@@ -25,11 +28,12 @@ public class SceneLoader : MonoBehaviour
         callback?.Invoke();
     }
 
-    // Update is called once per frame
     void OnLevelWasLoaded()
     {
+        // We animate the loader out.
         anim.SetTrigger("Out");
 
+        // We wait a bit before invoking the scene loaded events (about the time of the animation).
         if (SceneManager.GetActiveScene().name == "Game")
         {
             StartCoroutine(WaitAndDo(0.5f, () => OnGameSceneLoaded?.Invoke()));

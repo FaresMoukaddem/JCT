@@ -26,23 +26,26 @@ public class CardHandler : MonoBehaviour
         button.onClick.AddListener(ButtonPressed);
     }
 
+    // We animate the card using its update function.
     public void Update()
     {
         if (isAnimating) 
         {
+            // If its growing, increase its size and clamp its max value.
             if (currentScale < targetScale)
             {
                 currentScale += 0.1f;
 
                 currentScale = Mathf.Clamp(currentScale, 0, targetScale);
             }
-            else if(currentScale > targetScale) 
+            else if(currentScale > targetScale) // If its shrinking, decrease its size and clamp its min value.
             {
                 currentScale = Mathf.Clamp(currentScale, targetScale, 1.5f);
                 currentScale -= 0.1f;
             }
-            else
+            else // This means we have stopped animating.
             {
+                // If our animation was to disappear, then reset the card.
                 if (isDisappearing) 
                 {
                     isDisappearing = false;
@@ -52,18 +55,18 @@ public class CardHandler : MonoBehaviour
                 isAnimating = false;
             }
 
-            
-
+            // Set the scale of the card.
             buttonRectTransform.localScale = new Vector3(currentScale, currentScale, currentScale);
         }
     }
 
+    // Card on click function.
     private void ButtonPressed()
     {
         RoundManager.instance.ButtonPressed(this);
     }
 
-    // Start is called before the first frame update
+    // Configure the card at the start of each round (if its going to be used).
     public void Configure(int number, Sprite sprite, int x, int y, float timeToAnimate = 0)
     {
         image.sprite = sprite;
@@ -72,10 +75,13 @@ public class CardHandler : MonoBehaviour
         arrayPos.y = y;
 
         active = true;
-
+        
+        // Start animating in after a certain time.
+        // To get the effect of the cards animating after each other.
         StartCoroutine(AnimateAfter(timeToAnimate));
     }
 
+    // Reset the card to its initial state.
     public void Reset()
     {
         buttonRectTransform.localScale = Vector3.zero;
@@ -104,7 +110,6 @@ public class CardHandler : MonoBehaviour
         isAnimating = true;
     }
 
-    // Update is called once per frame
     public void ToggleHighlight(bool on)
     {
         ToggleGrowAnimation(on);

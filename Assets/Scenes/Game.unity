@@ -9079,7 +9079,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textAssets:
-  - {fileID: 4900000, guid: 6ceccc2f4c14ef74090d308dc0cdfb77, type: 3}
+  - {fileID: 4900000, guid: b7352a6431ad2dd44939e061bbbfe2d4, type: 3}
   - {fileID: 4900000, guid: e3bef39d221bde840b97910143440f5f, type: 3}
   - {fileID: 4900000, guid: a413a93422bd6f94fa7c033f767fe0da, type: 3}
   - {fileID: 4900000, guid: 6ca8e9c8543516f4d80a3a248a8ad4e0, type: 3}
@@ -9089,7 +9089,6 @@ MonoBehaviour:
   panel: {fileID: 286247493}
   numbersList: 
   isDrawingLevel: 0
-  answerChecker: {fileID: 1794461166}
   images:
   - {fileID: 21300000, guid: b40ec7df25764de44995b424e2f7cba6, type: 3}
   - {fileID: 21300000, guid: 672ae6225ad168640b76750ceb7c0935, type: 3}
@@ -9111,6 +9110,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4c29beb7d780ad040b6c7e7b26509b01, type: 3}
   - {fileID: 21300000, guid: 91293c7417e5cbc4cb30eb29df257084, type: 3}
   - {fileID: 21300000, guid: 06dc3279657494147917b01926f10729, type: 3}
+  - {fileID: 21300000, guid: 86f2f46ff7ab4164d953db58a3a9c367, type: 3}
+  - {fileID: 21300000, guid: 99e8f50671daec040bec2bfe0dbf2dc8, type: 3}
+  activeCards: []
 --- !u!4 &558457593
 Transform:
   m_ObjectHideFlags: 0

@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class RoundUIHandler : MonoBehaviour
 {
-
     public Text scoreText, levelText;
 
     public PopupHandler popup;

@@ -27,12 +27,14 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
+        // Start playing menu music.
         if (SoundHandler.instance)
         {
             SoundHandler.instance.PlaySong(1);
         }
     }
 
+    // Loads the game with a certain level.
     public void LoadGameWithLevel(int levelIndex) 
     {
         levelToLoad = levelIndex;
@@ -40,28 +42,17 @@ public class GameManager : MonoBehaviour
         LoadGameScene();
     }
 
+    // Event function for when the game scene is loaded.
     public void OnGameSceneLoaded()
     {
         RoundManager.instance.StartLevel(levelToLoad);
         SoundHandler.instance.PlaySong(0);
     }
 
+    // Event function for when the menu scene is loaded.
     public void OnMenuSceneLoaded()
     {
         SoundHandler.instance.PlaySong(1);
-    }
-
-    public void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            LoadGameWithLevel(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.G))
-        {
-            LoadMenuScene();
-
-        }
     }
 
     public void LoadMenuScene()

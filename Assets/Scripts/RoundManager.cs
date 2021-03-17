@@ -34,24 +34,31 @@ public class RoundManager : MonoBehaviour
         currentlySelectedCard = null;
     }
 
-    public void Configure(int currentLevel, int numberOfCards) 
+    public void Configure(int currentLevel, int numberOfCards, bool[,] levelMap) 
     {
         this.currentLevel = currentLevel;
         this.numberOfCards = numberOfCards;
         currentScore = 0;
         roundUI.UpdateScore(currentScore);
         roundUI.UpdateLevel(currentLevel + 1);
+
+        answerChecker.Configure(levelMap);
     }
 
     public void StartLevel(int index)
     {
         levelHandler.DrawLevel(index);
-        SoundHandler.instance.PlaySoundEffect(2);
+
+        if (SoundHandler.instance)
+        {
+            SoundHandler.instance.PlaySoundEffect(2);
+        }
     }
 
-    // Update is called once per frame
+    // This function will run when a card is pressed.
     public void ButtonPressed(CardHandler selectedCard)
     {
+        // If we dont have a currently selected card, select this one.
         if (currentlySelectedCard == null)
         {
             Debug.Log("New card");
@@ -59,7 +66,7 @@ public class RoundManager : MonoBehaviour
             currentlySelectedCard.ToggleHighlight(true);
             SoundHandler.instance.PlaySoundEffect(0);
         }
-        else if (currentlySelectedCard == selectedCard)
+        else if (currentlySelectedCard == selectedCard) // If we selected the same card, deselect it.
         {
             Debug.Log("Chose same card");
             currentlySelectedCard.ToggleHighlight(false);
@@ -68,36 +75,49 @@ public class RoundManager : MonoBehaviour
 
             currentlySelectedCard = null;
         }
-        else
+        else // Check if these two cards are identical, if they try to see if they can reach each other.
         {
+
+            // Turn off the currently selected card.
             currentlySelectedCard.ToggleHighlight(false);
 
-            //if (currentlySelectedCard.number == selectedCard.number)
-            //{
+            // If they are identical.
+            if (true /*currentlySelectedCard.number == selectedCard.number*/)
+            {
+                // Check if they can reach each other (using the algorithm).
                 bool answer = answerChecker.CheckAnswer(currentlySelectedCard.arrayPos, selectedCard.arrayPos);
 
                 Debug.Log(answer);
 
+                // If they can.
                 if (answer)
                 {
+                    // Update the level map.
                     answerChecker.UpdateLevelMap(currentlySelectedCard.arrayPos, selectedCard.arrayPos);
                 
                     Debug.Log("Cards left: " + numberOfCards);
-                    currentlySelectedCard.Dissappear();
-                    selectedCard.Dissappear();
 
+                    // Update score.
                     currentScore += 15;
                     roundUI.UpdateScore(currentScore);
 
+                    // Remove both cards from the game.
+                    currentlySelectedCard.Dissappear();
+                    selectedCard.Dissappear();
                     numberOfCards -= 2;
+                    levelHandler.RemoveCardsFromActiveList(currentlySelectedCard, selectedCard);
+
                     SoundHandler.instance.PlaySoundEffect(1);
 
+                    // If the game is done.
                     if (numberOfCards == 0) 
                     {
                         SoundHandler.instance.PlaySoundEffect(3);
 
+                        // Save that we finished this level.
                         PlayerPrefs.SetInt("FinishedLevel" + currentLevel.ToString(), 1);
 
+                        // Check if there are more levels.
                         if (currentLevel + 1 > levelHandler.numberOfLevels - 1)
                         {
                             ShowNoMoreLevelsPopup();   
@@ -107,15 +127,23 @@ public class RoundManager : MonoBehaviour
                             ShowNextLevelPopup();
                         }
                     }
+                    else if (levelHandler.currentLevelIsValid(answerChecker) == false) // Check if this level is still playable.
+                    {
+                        ShowRestartLevelPopup();
+                    }
                 }
-                else
+                else // If these cards cant be reached.
                 {
                     SoundHandler.instance.PlaySoundEffect(4);
                     currentScore -= 10;
                     if (currentScore < 0) currentScore = 0;
                     roundUI.UpdateScore(currentScore);
                 }
-            //}
+            }
+            else
+            {
+                SoundHandler.instance.PlaySoundEffect(4);
+            }
 
             currentlySelectedCard = null;
         }
@@ -138,7 +166,7 @@ public class RoundManager : MonoBehaviour
 
     public void ShowRestartLevelPopup()
     {
-        roundUI.ShowPopup("You lost this round :(", "Restart", "Menu", () => StartLevel(currentLevel), () => GoToMenu());
+        roundUI.ShowPopup("You lost this round :(", "Restart", "Menu", () => levelHandler.RestartLevel(), () => GoToMenu());
     }
 
     public void ShowNoMoreLevelsPopup()

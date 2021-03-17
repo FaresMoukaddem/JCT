@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class AnswerChecker : MonoBehaviour
 {
+    // A map defining where in the level cards currently exist.
     bool[,] levelMap;
 
+    // The vector representing the path we are attempting at any moment in the algorithm.
     Vector2Int path;
 
     // Start is called before the first frame update
@@ -14,17 +16,17 @@ public class AnswerChecker : MonoBehaviour
         this.levelMap = levelMap;
     }
 
-    // Update is called once per frame
     public bool CheckAnswer(Vector2Int firstCard, Vector2Int secondCard)
     {
-        // We try to go straight to our desired y pos
-            // We try our current pos, and all the possible left and right positions.
-        
-        // If none of these work
-            // We go down
-            // Then check if we can go right or left to find a path straight to our card
-            // If we can were done, if we can't there is no path to this card.
+        if (firstCard == secondCard) return false;
 
+        /*
+         The algorithms steps (If any of these apply, then we can go to it with a maximum of 2 turns).
+
+         * Check if we can go straight to it (either vertically or horizontally)
+         * Check if we can go either left or right and then find a way straight to our targets y position (or staright to our target) then go staright to it horizontally.
+         * Check if we can go either up or down and then find a way straight to our targets x position (or staright to our target) then go straight to it vertically.
+         */
 
         // 1 for up in the array
         // 0 for same level
@@ -39,13 +41,10 @@ public class AnswerChecker : MonoBehaviour
         // Current steps of the path;
         path = firstCard;
 
-        int turnsTaken = 0;
-
-        bool foundPath = false;
-
         Debug.Log(firstCard);
         Debug.Log(secondCard);
         
+        // Check if we can go straight to it horizontally.
         if(path.y == secondCard.y) 
         {
             if(CheckIfStraightPathToXCard(path, secondCard, path.x < secondCard.x)) 
@@ -54,7 +53,10 @@ public class AnswerChecker : MonoBehaviour
             }
         }
 
+        // Reset path
         path = firstCard;
+
+        // Check if we can go straight to it vertically.
         if(path.x == secondCard.x) 
         {
             if(CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
@@ -66,11 +68,9 @@ public class AnswerChecker : MonoBehaviour
         // Reset path.
         path = firstCard;
 
-        // Check all paths from right or left straight upwards
-        Debug.Log("up " + up);
+        // Now we check if we can go right or left, to see if we can go straight to the target, or its y position, then go straight to it horizontally.
 
-        foundPath = false;
-
+        // A variable to keep track of steps moved (extra information).
         int stepsMoved = 1;
 
         Debug.Log("checking right paths");
@@ -80,6 +80,7 @@ public class AnswerChecker : MonoBehaviour
             // If we have moved, we need to check if its an available path or not.
             if (i != path.x)
             {
+                // If that path is not available, then stop moving that way.
                 if (levelMap[path.y, i] == true) break;
             }
 
@@ -91,10 +92,12 @@ public class AnswerChecker : MonoBehaviour
                     return true;
                 }
             }
-            else if (CheckIfStraightPathToYPos(new Vector2Int(i, path.y), secondCard.y, up > 0, true))
+            else if (CheckIfStraightPathToYPos(new Vector2Int(i, path.y), secondCard.y, up > 0, true)) // We check if we can go to our desired y pos.
             {
                 Debug.Log("we found a path from the right to our desired y pos" + " steps: " + stepsMoved);
                 Debug.Log("current path " + path);
+
+                // Now we check if we can go straight to it.
                 if (CheckIfStraightPathToXCard(path, secondCard, i < secondCard.x)) 
                 {
                     Debug.Log("And were able to go directly to our goal from there!");
@@ -102,6 +105,7 @@ public class AnswerChecker : MonoBehaviour
                 }
                 else 
                 {
+                    // We reset our y position.
                     path.x = i;
                     path.y = firstCard.y;
                 }
@@ -112,9 +116,12 @@ public class AnswerChecker : MonoBehaviour
         // Reset path
         path = firstCard;
 
+        // Reset steps moved.
         stepsMoved = 1;
+
         Debug.Log("checking left paths");
-        // Check left paths.
+
+        // Now we do the same but for the left paths.
         for (int i = path.x - 1; i >= 0; i--)
         {
             if (levelMap[path.y, i] == true) break;
@@ -148,18 +155,24 @@ public class AnswerChecker : MonoBehaviour
         //===============================================================================================================================
         //===============================================================================================================================
 
+        // Now we check if we can move vertically, then either reach our target horizontally, or reach its x position, then reach it vertically.
+
         // Reset path
         path = firstCard;
 
+        // First we start by going in the 'proper y direction' meaning towards out target.
         Debug.Log("Now we check all possibilites in the proper y direction");
 
+        // Incase up is zero, we can set it to 1, just to have a starting point of which direction to go.
+        // Not the best way to do it.
         if (up == 0) up = 1;
 
-        // Now how much up we can go from our initial position
+        // Now we keep going up from our initial position (as long as were in the array and we dont hit a card).
         while (path.y + up >= 0 && path.y + up < levelMap.GetLength(0) && levelMap[path.y + up, path.x] != true)
         {
             path.y += up;
 
+            // If were on the same y pos, try to go straight to it horizontally.
             if (path.y == secondCard.y)
             {
                 if (CheckIfStraightPathToXCard(path, secondCard, path.x < secondCard.x))
@@ -168,9 +181,11 @@ public class AnswerChecker : MonoBehaviour
                     return true;
                 }
             }
-            else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true))
+            else if (CheckIfStraightPathToXPos(path, secondCard.x, path.x < secondCard.x, true)) // We check if we can go to our desired x pos.
             {
                 Debug.Log("Yes we went straight +up from out initial position, and then went straight to the proper x pos");
+
+                // Now we check if we can go straight to it.
                 if (CheckIfStraightPathToYCard(path, secondCard, path.y < secondCard.y))
                 {
                     Debug.Log("And then we went vertically straight to the card!");
@@ -184,7 +199,7 @@ public class AnswerChecker : MonoBehaviour
         path = firstCard;
 
         Debug.Log("Now we check all possibilites in the opposite y direction");
-        // Now how much up we can go from our initial position
+        // Now we do the same as the previous loop, but in the opposite y direction.
         while (path.y - up >= 0 && path.y - up < levelMap.GetLength(0) && levelMap[path.y - up, path.x] != true)
         {
             path.y -= up;
@@ -209,9 +224,12 @@ public class AnswerChecker : MonoBehaviour
             path.x = firstCard.x;
         }
 
+        // If none of those returned true, that means we can't go to it.
         return false;
     }
 
+    // This function checks if we can go straight to our desired y position (if no card is there) from a starting point.
+    // And sets our path to that point if we want to.
     public bool CheckIfStraightPathToYPos(Vector2Int fromPos, int desiredYPos, bool upWards, bool setPath) 
     {
         int currentY = fromPos.y;
@@ -243,24 +261,13 @@ public class AnswerChecker : MonoBehaviour
 
     public void UpdateLevelMap(Vector2Int firstCard, Vector2Int secondCard) 
     {
-        /*
-        Debug.Log("MAP BEFORE");
-        for(int i = 0; i < levelMap.GetLength(0); i++) 
-        {
-            string s = "";
-            for(int j = 0; j < levelMap.GetLength(1); j++)
-            {
-                s += levelMap[i, j];
-            }
-            Debug.Log(s);
-        }
-        */
-
         levelMap[firstCard.y, firstCard.x] = false;
         levelMap[secondCard.y, secondCard.x] = false;
+    }
 
-        /*
-        Debug.Log("MAP AFTER");
+    // This function prints the level map on the screen (used for debugging).
+    public void PrintLevelMap()
+    {
         for (int i = 0; i < levelMap.GetLength(0); i++)
         {
             string s = "";
@@ -270,9 +277,10 @@ public class AnswerChecker : MonoBehaviour
             }
             Debug.Log(s);
         }
-        */
     }
 
+    // This function checks if we can go straight to our desired x position (if no card is there) from a starting point.
+    // And sets our path to that point if we want to.
     public bool CheckIfStraightPathToXPos(Vector2Int fromPos, int desiredXPos, bool right, bool setPath) 
     {
         int currentX = fromPos.x;
@@ -304,6 +312,7 @@ public class AnswerChecker : MonoBehaviour
         return false;
     }
 
+    // This function checks if we can go vertically straight to a card.
     public bool CheckIfStraightPathToYCard(Vector2Int fromPos, Vector2Int targetCardPos, bool upWards)
     {
         int currentY = fromPos.y;
@@ -332,6 +341,7 @@ public class AnswerChecker : MonoBehaviour
         return false;
     }
 
+    // This function checks if we can go horizontally straight to a card.
     public bool CheckIfStraightPathToXCard(Vector2Int fromPos, Vector2Int targetCardPos, bool right)
     {
         int currentX = fromPos.x;
