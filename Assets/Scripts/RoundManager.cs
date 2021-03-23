@@ -82,7 +82,7 @@ public class RoundManager : MonoBehaviour
             currentlySelectedCard.ToggleHighlight(false);
 
             // If they are identical.
-            if (true /*currentlySelectedCard.number == selectedCard.number*/)
+            if (currentlySelectedCard.number == selectedCard.number)
             {
                 // Check if they can reach each other (using the algorithm).
                 bool answer = answerChecker.CheckAnswer(currentlySelectedCard.arrayPos, selectedCard.arrayPos);
